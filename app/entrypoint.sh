@@ -81,11 +81,13 @@ if [ "$(id -u)" = "0" ]; then
     dumb-init /usr/bin/code-server \
       --bind-addr "0.0.0.0:$PORT" \
       --disable-telemetry \
+      --enable-remote-storage \
       "$WORKSPACE_DIR"
 else
   # Already non-root (e.g. someone set a start command with a user override).
   exec dumb-init /usr/bin/code-server \
     --bind-addr "0.0.0.0:$PORT" \
     --disable-telemetry \
+    --enable-remote-storage \
     "$WORKSPACE_DIR"
 fi
