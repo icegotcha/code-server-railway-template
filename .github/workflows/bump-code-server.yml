@@ -1,0 +1,41 @@
+name: Bump code-server
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find latest release
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh api repos/coder/code-server/releases/latest --jq .tag_name | sed 's/^v//')
+          current=$(grep -m1 '^FROM codercom/code-server:' app/Dockerfile | cut -d: -f2)
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+      - name: Update Dockerfile and open PR
+        if: steps.v.outputs.latest != steps.v.outputs.current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.v.outputs.latest }}
+        run: |
+          branch="bump-code-server-$LATEST"
+          sed -i "s|^FROM codercom/code-server:.*|FROM codercom/code-server:$LATEST|" app/Dockerfile
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -am "Update code-server to $LATEST"
+          git push -u origin "$branch"
+          gh pr create --title "Update code-server to $LATEST" \
+            --body "Automated bump to https://github.com/coder/code-server/releases/tag/v$LATEST. Merging deploys it." \
+            --base main --head "$branch"
