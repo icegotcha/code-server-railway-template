@@ -14,7 +14,7 @@
 #     https://github.com/coder/code-server/blob/main/src/node/cli.ts
 #   - Unauthenticated liveness endpoint at /healthz:
 #     https://github.com/coder/code-server/blob/main/docs/FAQ.md#what-is-the-healthz-endpoint
-FROM codercom/code-server:4.129.0
+FROM codercom/code-server:4.145.2
 
 # The base image ends with `USER 1000`. We need root for apt and for the
 # volume-ownership fix at container start; our entrypoint drops back to
